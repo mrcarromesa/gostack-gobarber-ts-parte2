@@ -447,3 +447,28 @@ import { parseISO, startOfHour, isEqual } from 'date-fns';
 - Informamos as propriedades da classe informando sempre o tipo delas, e podemos criar um consturctor para definir o valor delas ao iniciar o object.
 
 - Sempre que for amazenar algum dado na aplicação ou em uma base de dados utilizamos o model.
+
+---
+
+## Repository
+
+- Repositorio seria uma conexão entre a persistencia dos dados e a rota
+- No repositorio terá o metodo `create` para criar as informações, `find` para buscar/consultar as informações.
+- Criamos um repositorio por model.
+- Criamos no formato de class
+
+- Vamos criar o repositorio `src/repositories/AppointmentsRepository.ts`
+
+- Ao invés de utilizarmos a nossa variavel de persistencia direto na rota, iremos utiliza-la no repository.
+
+- Foi movido várias responsabilidades do `src/routes/appointments.routes.ts` para o `models` e para o `repositories`, essa refatoração de código é bem comum de ser feita.
+
+- Precisamos também adicionar uma rota para retornar todos os appointments,
+- No arquivo `src/repositories/AppointmentsRepository.ts` adicionamos o metodo `all` e em `src/routes/appointments.routes.ts` adicionamos a rota para obter esses dados
+
+- E criamos no Insomnia a rota List do tipo get para obter os dados do Appointments
+
+---
+
+- Ainda precisamos continuar melhorando o código das rotas, utilizando a técnica de `SoC` = `Separation of Concerns (Separação de Preocupações)`
+- Então precisamos diminuir as preocupações da nossa rota ainda possuí várias preocupações, como de criar appointments

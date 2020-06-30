@@ -257,3 +257,193 @@ module.exports = {
 	arrowParens: 'avoid',
 }
 ```
+
+---
+
+## Debug
+
+- Configurar o debug no vscode para o Node:
+
+- Acesse a parte de debug da IDE
+
+- Clique em `create a launch.json file`
+- Se pedir escolha a opção Node
+
+- Será criado uma arquivo `.vscode/launch.json`:
+
+```json
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "attach",
+      "protocol": "inspector",
+      "restart": true,
+      "name": "Debug",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/**/*.js"
+      ]
+    }
+  ]
+}
+
+```
+
+- essa configuração `"request": "attach",` indica que o debug irá acessar a nossa aplicação que já está executando, ao invés de utilizarmos o `launch` que no caso iria executar a aplicação novamente do zero.
+
+- Precisamos ajustar em `scripts` dentro do `package.json`:
+
+```json
+"scripts": {
+  "build": "tsc",
+  "dev:server": "ts-node-dev --inspect --transpileOnly --ignore-watch node_modules src/server.ts"
+},
+```
+
+- Adicionamos o `--inspect`
+
+- Por fim podemos executar a aplicação normalmente:
+
+```bash
+yarn dev:server
+```
+
+- E por fim podemos executar o debug.
+
+---
+
+## Rotas
+
+- Para iniciar a aplicação podemos realizar separação das rotas
+
+- Criamos a pasta `src/routes`
+
+- Criamos o arquivo `src/routes/index.ts` e o arquivo `src/routes/appointments.routes.ts`
+
+- Os arquivos dentro da pasta `src/routes` podemos terminar com `.routes.ts` pois facilita depois a busca de cada um deles.
+
+- No arquivo `src/routes/index.ts` podemos importar esse arquivo para lá:
+
+```ts
+import appointmentsRouter from './appointments.routes';
+
+// ...
+
+routes.use('/appointments', appointmentsRouter);
+```
+
+- Destacamos o seguinte:
+
+```ts
+routes.use('/appointments', appointmentsRouter);
+```
+
+- Toda vez que a aplicação realizar uma requisição para rota `/appointments/QUALQUER_COISA`, o node irá entender que ele deverá tratar o restante dentro do `src/routes/appointments.routes.ts` e dentro desse arquivo `src/routes/appointments.routes.ts` Não precisamos adicionar o `/appointments`:
+
+```ts
+// Dentro do arquivo `src/routes/appointments.routes.ts` ao invés de utilizar:
+
+// appointmentsRouter.get('/appointments/', (req, res)=> {
+  //...
+// });
+
+// Podemos utilizar
+appoitmentsRouter.get('/', (req, res) => {
+  // ...
+  // O node já irá direcionar de http?s://meusite/appointments/ para essa function aqui.
+});
+
+```
+
+**Lembre de adicionar no arquivo `src/server.ts`:**
+
+```ts
+import routes from './routes';
+
+const app = express();
+app.use(routes);
+```
+
+### Insomnia
+
+- Para realizarmos testes...
+
+- Crie o workspace `GoBarber Bootcamp`
+- Criar a pasta `Appointments`
+- Criar  uma rota `Create` metodo POST com JSON
+- Configura o ambiente de desenvolvimento adicionando o base_url para `http://localhost:3333`
+
+
+---
+
+## Criando appointments sem base de dados apenas para testes
+
+- Vamos adicionar a dependencia `uuidv4`:
+
+```bash
+yarn add uuidv4
+```
+
+- Nosso arquivo ficará assim:
+
+```ts
+import { Router } from 'express';
+import { uuid } from 'uuidv4';
+
+const appointmentsRouter = Router();
+
+const appointments = [];
+
+appointmentsRouter.post('/', (req, res) => {
+  const { provider, date } = req.body;
+
+  const appointment = {
+    id: uuid(),
+    provider,
+    date,
+  };
+
+  appointments.push(appointment);
+
+  return res.json(appointment);
+});
+
+export default appointmentsRouter;
+
+```
+
+
+## Trabalhado com datas
+
+- Para isso podemos utilizar a biblioteca `data-fns`:
+
+```bash
+yarn add date-fns
+```
+
+- Iremos utilizar isso inicialmente em `src/routes/appointments.routes.ts`:
+
+```ts
+import { parseISO, startOfHour, isEqual } from 'date-fns';
+```
+
+- O `parseISO`, irá converter uma string para um `Date()`
+- O `startOfHour` irá obter o horário inicial da hora informada
+- O `isEqual` recebe duas datas e verifica se são iguais.
+
+---
+
+## Models
+
+- Vamos criar um model em `src/models/Appointment.ts` criamos no formato de class
+
+- Informamos as propriedades da classe informando sempre o tipo delas, e podemos criar um consturctor para definir o valor delas ao iniciar o object.
+
+- Sempre que for amazenar algum dado na aplicação ou em uma base de dados utilizamos o model.

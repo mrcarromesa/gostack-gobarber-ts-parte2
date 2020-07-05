@@ -472,3 +472,76 @@ import { parseISO, startOfHour, isEqual } from 'date-fns';
 
 - Ainda precisamos continuar melhorando o código das rotas, utilizando a técnica de `SoC` = `Separation of Concerns (Separação de Preocupações)`
 - Então precisamos diminuir as preocupações da nossa rota ainda possuí várias preocupações, como de criar appointments
+
+---
+
+## Trabalhando com dados
+
+- Na arquitetura de software quand queremos enviar dados de um arquivo para outro chamamos isso de `DTO - Data Transfer Object`
+- No JavaScript é sempre melhor utilizar a desetruturação de objectos para podermos utilizar parametros nomeados.
+- E o melhor de utilizar parametros nomeados é que se não utilizarmos dessa forma e faltar algum parametro o erro que será retornado é algo do tipo:
+`esperado x paramentros, foi enviado y`, então não fica muito claro, agora no caso de parametros nomeados, o erro irá retornar o nome do parametro que faltou, dessa forma fica muito mais fácil de encontrar o error.
+
+- E quando eu quero omitir um parametro da minha function?
+
+- Podemos utilizar o recurso do TypeScript `Omit<CLASS_OU_INTERFACE, 'PARAMETRO_QUE_PRECISO_OMITIR'>` um exemplo disso pode ser visto em `src/models/Appointment.ts`:
+
+```ts
+ constructor({ provider, date }: Omit<Appointment, 'id'>) {
+    this.id = uuid();
+    this.provider = provider;
+    this.date = date;
+  }
+```
+
+- Estamos informando que recebemos todos os parametros da class `Appointment` porém não queremos que o id seja passado.
+
+---
+
+## SOLID e Services
+
+- Services
+
+- Temos um model que é a representação de como o dado é salvo, os campos dele
+- Temos o repositório que irá trabalhar com o dado em si, irá listar, atualizar, deletar
+
+- O service irá armazenar a regra de negócio da aplicação
+
+- precisamos dividir melhor a preocupação da nossa aplicação, que é proposto pela `SoC`, no caso da rota ela só pode ser preocupar com:
+  - Receber a requisição
+  - Chamar outro arquivo
+  - Devolver uma resposta
+  - Caso tenha algo além disso, devemos abstrair isso dentro de um service
+
+
+- Criar uma pasta `src/services/`
+
+- Criamos um serviço especifico para criação de um agendamento, ele não irá listar, atualizar, nada disso, irá apenas criar o agendamento.
+
+- Os serviços também não tem acesso direto aos dados da requisição e nem aos dados da respostas
+- Os erros tratamos com `throw Error()` ao invés do `res.status(400).json({})`
+
+- Crie o arquivo `src/services/CreateAppointmentService.ts`
+
+- Dentro do serviço só posso ter apenas um metodo que é o `execute()`
+
+- Outra coisa importante que é interessante separar é:
+  - O que é transformação de dados e
+  - O que é regra de negócio
+
+- Outra coisa importante é que repetir código em muitos casos não é um problema, pois se automatizarmos de forma precoce pode ser que tenhamos um problema mais a frente
+
+- Como o serviço irá utilizar o Repository, não podemos instanciar o Repository dentro dele, pois no caso quando criarmos outro serviço essa instancia será diferente uma das outras, ou seja cada serviço teria acesso a uma instancia diferente e não a mesma, nesse caso iremos aplicar o principio de `Dependecy Inversion (SOLID)`, nesse caso iremos enviar via `constructor` o paramentro contendo a instancia do repository.
+
+- Com tudo pronto dentro do service podemos chamar isso dentro da rota `src/routes/appointments.routes.ts`
+
+
+- Um conceito importante que temos que ter em mente é o `DRY` (Don't repeat yourself), ou seja não repetir regra de negócio na nossa aplicação
+
+- Nesse projeto utilizamos dois conceitos do `SOLID` que no caso foi o `Single responsibility principle` e o `Dependency Inversion Principle`
+
+---
+
+
+
+

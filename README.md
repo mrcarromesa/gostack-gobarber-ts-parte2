@@ -389,3 +389,55 @@ yarn add @types/multer -D
 ```ts
 app.use('/files', express.static(uploadConfig.directory));
 ```
+
+
+---
+
+## Lidar com exceptions
+
+- Criar a pasta `src/erros/`
+
+- Criar o arquivo `src/erros/AppError.ts`
+
+- Agora ajuste o arquivo `src/services/AuthenticateUserService.ts` e ajustar as chamadas de error, também no `src/services/CreateAppointmentService.ts`, também no `src/services/CreateUserService.ts` e no `src/services/UpdateUserAvatarService.ts`, também no `src/middleware/ensureAuthenticated.ts`
+
+---
+
+## Global exception handle
+
+- Iremos capturar o erro não importar quem originou ele, todos os erros irão cair em um ponto central
+
+- Primeiro em todas as rotas removemos todos os try catch
+
+- No arquivo `src/server.ts` iremos adicionar um middleware especifico para erros ele deve ser chamado após as rotas.
+
+
+- Problemas é que erros que são gerados de forma assincrona não são capturados por padrão aqui, para resolver isso iremos utilizar o seguinte pacote:
+
+```bash
+yarn add express-async-errors
+```
+
+- E no arquivo `src/server.ts` logo depois da importação do express importamos:
+
+```ts
+import 'express-async-errors';
+```
+
+- O eslint está acusando erro de variaveis não utilizadas como no caso:
+
+```ts
+(err: Error, request: Request, response: Response, next: NextFunction) => {
+```
+
+- Para isso alteramos esse trecho para:
+
+```ts
+(err: Error, request: Request, response: Response, _: NextFunction) => {
+```
+
+- E no arquivo `.eslintrc.json` adicinamos a seguinte regra:
+
+```json
+"@typescript-eslint/no-unused-vars" : ["error",{ "argsIgnorePattern": "_"}],
+```

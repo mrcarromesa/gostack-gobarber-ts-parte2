@@ -5,6 +5,8 @@ import { sign } from 'jsonwebtoken';
 
 import authConfig from '../config/auth';
 
+import AppError from '../errors/AppError';
+
 import User from '../models/User';
 
 interface Request {
@@ -25,17 +27,17 @@ class AuthenticationUserService {
     });
 
     if (!user) {
-      throw new Error('Incorrect email/password combination');
+      throw new AppError('Incorrect email/password combination', 401);
     }
 
     const passwordMatched = await compare(password, user.password);
 
     if (!passwordMatched) {
-      throw new Error('Incorrect email/password combination');
+      throw new AppError('Incorrect email/password combination', 401);
     }
 
     const { secret, expiresIn } = authConfig.jwt;
-    console.log('a');
+
     const token = sign(
       // Payload dentro desse objeto, ou seja informações do usuário que queremos recuperar, não pode ser uma informação sensivel
       {},
@@ -46,8 +48,6 @@ class AuthenticationUserService {
         expiresIn, // Quanto tempo esse token irá durar nunca colocar para sempre é perigoso
       },
     );
-
-    console.log('b');
 
     delete user.password;
 

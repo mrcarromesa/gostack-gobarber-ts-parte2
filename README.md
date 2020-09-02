@@ -441,3 +441,13 @@ import 'express-async-errors';
 ```json
 "@typescript-eslint/no-unused-vars" : ["error",{ "argsIgnorePattern": "_"}],
 ```
+
+---
+
+## Permitindo acesso através de requisições ajax, cors:
+
+- instala:
+
+```bash
+yarn add cors
+```
